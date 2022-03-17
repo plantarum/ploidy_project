@@ -9,7 +9,12 @@ rm(list=ls())
 
 #-------------------------------------------------------------------------------------------------------------------------------------
 # Front Matter - PACKAGES
-# maptools for mapping ranges
+library(ecospat)
+library(raster)
+library(maptools)
+library(dismo)
+library(rgeos)
+library(ENMTools)
 
 #-------------------------------------------------------------------------------------------------------------------------------------
 # Session Tool Information: 
@@ -105,7 +110,7 @@ precipbreadth <- function(sp.coords){
 
 env.range.area <- function(pca.scores){
   mask.rast <- raster(extent(range(pca.scores[,1]), range(pca.scores[,2]))) #create an empty raster
-  mask.rast <- extend(mask.rast, extent(rast) + 1)
+  mask.rast <- extend(mask.rast, extent(mask.rast) + 1)
   res(mask.rast) <- 0.2
   
   #set the background cells in the raster to 0
@@ -134,10 +139,9 @@ geo.range.area <- function(coordinates){
   enm$range <- background.raster.buffer(enm$presence.points, 100000, wc)
   
   ##Calculate the area of the range
-  ncells <- freq(hybrid_enm$range, value = 1, useNA= "no") #number of cells where the hybrid is present
-  area <- res_km[1] *res_km[2] * ncells_hybrid #range size is equal to the resolution times the number of cells
+  ncells <- freq(enm$range, value = 1, useNA= "no") #number of cells where the hybrid is present
+  area <- res_km[1] *res_km[2] * ncells #range size is equal to the resolution times the number of cells
 }
-
 
 
 data("wrld_simpl")
@@ -179,10 +183,15 @@ for (i in 1:nrow(comb)){
   parent1_precbreadth <- parent1_prectest[3]
 
   #Geographical ranges
-  hybrid_enm <- geo.range.area(hybridC)
-  parent1_enm <- geo.range.area(parent1C)
+  area_hybrid <- geo.range.area(hybridC)
+  area_parent1 <- geo.range.area(parent1C)
   
   #Geographical range overlap
+  hybrid_enm <- enmtools.species(presence.points = hybridC)
+  hybrid_enm$range <- background.raster.buffer(hybrid_enm$presence.points, 100000, wc)
+  
+  parent1_enm <- enmtools.species(presence.points = parent1C)
+  parent1_enm$range <- background.raster.buffer(parent1_enm$presence.points, 100000, wc)
   comp1_overlap_geo <- geog.range.overlap(hybrid_enm, parent1_enm)
   
   #Extract climate conditions where the species occurs 
@@ -253,9 +262,11 @@ for (i in 1:nrow(comb)){
   
     #geographical range size and overlap
     area_parent2 <- geo.range.area(parent2C)
+    parent2_enm <- enmtools.species(presence.points = parent2C)
+    parent2_enm$range <- background.raster.buffer(parent2_enm$presence.points, 100000, wc)
     comp2_overlap_geo <- geog.range.overlap(hybrid_enm, parent2_enm)
-    
-    #Extract environmental occurrence conditions
+   
+     #Extract environmental occurrence conditions
     parent2_env <- envextract(parent2C)
     
     ##PCA scores for parent2
