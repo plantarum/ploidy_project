@@ -10,6 +10,11 @@ rm(list=ls())
 #-------------------------------------------------------------------------------------------------------------------------------------
 # Front Matter - PACKAGES
 # maptools for mapping ranges
+library(maptools)
+library(raster)
+library(ENMTools)
+library(dismo)
+library(ade4)
 
 #-------------------------------------------------------------------------------------------------------------------------------------
 # Session Tool Information: 
@@ -37,7 +42,7 @@ devtools::session_info()
 #-------------------------------------------------------------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------------------------------------
 
-setwd("C:/Users/julia/Documents/Agriculture and Agri-Food Canada/R/polyploidy_project")
+#setwd("C:/Users/julia/Documents/Agriculture and Agri-Food Canada/R/polyploidy_project")
 
 #read in information about the hybrid and its parents 
 comb <- read.csv("Hybrid_parent_comb.csv") #csv with hybrid and its parents
@@ -53,7 +58,7 @@ if (length(unlist(strsplit(date(), " "))) == 5) date.str <- paste(unlist(strspli
 if (length(unlist(strsplit(date(), " "))) == 6) date.str <- paste(unlist(strsplit(date(), " "))[c(1:2,4,6)], collapse='_') 
 
 #get worldclim data 
-wc <- getData(name = "worldclim", var = "bio", res = 10)
+wc <- getData(name = "worldclim", var = "bio", res = 10, path = "../")
 res_km <- res(wc) *111
 
 #convert worldclim data to 10000 randomly sampled points across the Earth
@@ -105,7 +110,7 @@ precipbreadth <- function(sp.coords){
 
 env.range.area <- function(pca.scores){
   mask.rast <- raster(extent(range(pca.scores[,1]), range(pca.scores[,2]))) #create an empty raster
-  mask.rast <- extend(mask.rast, extent(rast) + 1)
+  mask.rast <- extend(mask.rast, extent(mask.rast) + 1)
   res(mask.rast) <- 0.2
   
   #set the background cells in the raster to 0
@@ -122,7 +127,7 @@ env.range.area <- function(pca.scores){
   ncells <- freq(env_range, value= 1, useNA= "no")
   
   #calculate area
-  area <- res_rast[1] *res_rast[2] *ncells
+  area <- res_rast[1] * res_rast[2] * ncells
 }
 
 geo.range.area <- function(coordinates){
@@ -134,8 +139,10 @@ geo.range.area <- function(coordinates){
   enm$range <- background.raster.buffer(enm$presence.points, 100000, wc)
   
   ##Calculate the area of the range
-  ncells <- freq(hybrid_enm$range, value = 1, useNA= "no") #number of cells where the hybrid is present
-  area <- res_km[1] *res_km[2] * ncells_hybrid #range size is equal to the resolution times the number of cells
+  #ncells <- freq(hybrid_enm$range, value = 1, useNA= "no") #number of cells where the hybrid is present
+  ncells <- freq(enm$range, value = 1, useNA= "no") #number of cells where the hybrid is present
+  area <- res_km[1] * res_km[2] * ncells #range size is equal to the resolution times the number of cells
+  #area <- res_km[1] *res_km[2] * ncells_hybrid #range size is equal to the resolution times the number of cells
 }
 
 
@@ -145,15 +152,23 @@ data("wrld_simpl")
 Summary.File <- NULL
 i <- 1
 
+Aegilops_cylindrica.csv; Aegilops_tauschii.csv; Aegilops_caudata.csv
+
 for (i in 1:nrow(comb)){
   #get the names of the species
   hybrid_name <- hybrids[i]
   parent1_name <- parent1s[i]
-  
+
+  hybrid_name <- "Aegilops_cylindrica"
+  parent1_name <- "Aegilops_tauschii"
+  parent2_name <- "Aegilops_caudata"
+
   #read in data for the species and extract coordinates 
+  #hybrid <- read.csv(paste("../Datasets/", hybrid_name, ".csv", sep=""))
   hybrid <- read.csv(paste("Datasets/", hybrids[i], ".csv", sep="")) 
   hybridC <- getcoords(hybrid)
   
+  #parent1 <- read.csv(paste("../Datasets/", parent1_name, ".csv", sep=""))
   parent1 <- read.csv(paste("Datasets/", parent1s[i], ".csv", sep=""))
   parent1C <- getcoords(parent1)
 
@@ -178,9 +193,16 @@ for (i in 1:nrow(comb)){
   parent1_precmin <- parent1_prectest[2]
   parent1_precbreadth <- parent1_prectest[3]
 
+  hybrid_enm <- enmtools.species(presence.points = hybridC)
+  hybrid_enm$range <- background.raster.buffer(hybrid_enm$presence.points,
+                                               100000, wc) 
+  parent1_enm <- enmtools.species(presence.points = parent1C)
+  parent1_enm$range <- background.raster.buffer(parent1_enm$presence.points,
+                                               100000, wc) 
+
   #Geographical ranges
-  hybrid_enm <- geo.range.area(hybridC)
-  parent1_enm <- geo.range.area(parent1C)
+  area_hybrid <- geo.range.area(hybridC)
+  area_parent1 <- geo.range.area(parent1C)
   
   #Geographical range overlap
   comp1_overlap_geo <- geog.range.overlap(hybrid_enm, parent1_enm)
@@ -202,7 +224,7 @@ for (i in 1:nrow(comb)){
   scores.hybrid <- suprow(pca.env, hybrid_env)$li
   
   #Environmental ranges
-  env_range_area <- env.range.area(scores.hybrid)
+  env_range_area_hybrid<- env.range.area(scores.hybrid)
   env_range_area_P1 <- env.range.area(scores.parent1)
   
   #Environmental overlap
@@ -236,8 +258,10 @@ for (i in 1:nrow(comb)){
   
   #If the hybrid has a parent 2 then redo the above calculations with parent 2:
   if (parent2s[i] != "") {
+    #parent2_name <- "Aegilops_caudata"
     parent2_name <- parent2s[i]
-    parent2 <- read.csv(paste("Datasets/", parent2s[i], ".csv", sep=""))
+    #parent2 <- read.csv(paste("../Datasets/", parent2_name, ".csv", sep=""))
+    parent2 <- read.csv(paste("../Datasets/", parent2s[i], ".csv", sep=""))
     parent2C <- getcoords(parent2)
     
     #max, min and breadths for temperature and precipitation
@@ -250,6 +274,10 @@ for (i in 1:nrow(comb)){
     parent2_precmax <- parent2_prectest[1]
     parent2_precmin <- parent2_prectest[2]
     parent2_precbreadth <- parent2_prectest[3]
+
+    parent2_enm <- enmtools.species(presence.points = parent2C)
+    parent2_enm$range <- background.raster.buffer(parent2_enm$presence.points,
+                                                  100000, wc) 
   
     #geographical range size and overlap
     area_parent2 <- geo.range.area(parent2C)
@@ -313,13 +341,19 @@ for (i in 1:nrow(comb)){
     
   }
   
-  data.line <- c(hybrid_name, parent1_name, parent2_name,hybrid_tempmax, parent1_tempmax, parent2_tempmax, 
-                 hybrid_tempmin, parent1_tempmin, parent2_tempmin, hybrid_tempbreadth, parent1_tempbreadth,
-                 parent2_tempbreadth,hybrid_precmax,parent1_precmax, parent2_precmax, hybrid_precmin, 
-                 parent1_precmin, parent2_precmin, hybrid_precbreadth, parent1_precbreadth, 
-                 parent2_precbreadth, area_hybrid, area_parent1, comp1_overlap_geo, area_parent2,comp2_overlap_geo,env_range_area, env_range_area_P1, Schoeners_metric,
-                 Hellinger_metric,env_range_area_P1, Schoeners_metric_2, Hellinger_metric_2, comp1_overlap, comp1_hybrid_only, parent1_only, 
-                 comp2_overlap, comp2_hybrid_only, parent2_only)
+  data.line <- c(hybrid_name, parent1_name, parent2_name,hybrid_tempmax,
+                 parent1_tempmax, parent2_tempmax, hybrid_tempmin,
+                 parent1_tempmin, parent2_tempmin, hybrid_tempbreadth,
+                 parent1_tempbreadth, parent2_tempbreadth,hybrid_precmax,
+                 parent1_precmax, parent2_precmax, hybrid_precmin,
+                 parent1_precmin, parent2_precmin, hybrid_precbreadth,
+                 parent1_precbreadth, parent2_precbreadth, area_hybrid,
+                 area_parent1, comp1_overlap_geo, area_parent2,
+                 comp2_overlap_geo, env_range_area_hybrid, env_range_area_P1,
+                 Schoeners_metric, Hellinger_metric,env_range_area_P1,
+                 Schoeners_metric_2, Hellinger_metric_2, comp1_overlap,
+                 comp1_hybrid_only, parent1_only, comp2_overlap,
+                 comp2_hybrid_only, parent2_only)
   Summary.File <- rbind(Summary.File, data.line)
 }
 
