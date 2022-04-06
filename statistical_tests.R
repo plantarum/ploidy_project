@@ -160,7 +160,7 @@ abline(v = mean(B2sRanks[, "B2"]))
 sum(res < mean(B2sRanks[, "B2"]))/length(res) * 2
 
 #----------------------------------------------------------------------
-##B1 and B2 without parents that aren't diploid
+##B1 and B2 with only parents that are diploid
 ##note: do not need to include P3 since one of the parents isn't diploid for the species with 3 species 
 B1s <- summ[, c("B1", "B1_P1", "B1_P2")] 
 B2s <- summ[, c("B2", "B2_P1", "B2_P2")]
@@ -250,7 +250,7 @@ sum(res > mean(tempmaxRanks[, "Temp_max"]))/length(res) * 2
 res <- rankDist(tempminRanks, n = 10000)
 
 hist(res, breaks = 20,
-     main = "Null distribution of mean polyploid temp max rank",
+     main = "Null distribution of mean polyploid temp min rank",
      xlab = "Polyploid Rank")
 ## 95% confidence interval, in red:
 abline(v = quantile(res, probs = c(0.025, 0.975)), col = 2)
