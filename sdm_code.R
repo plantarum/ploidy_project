@@ -3,30 +3,44 @@
 library(raster)
 #dismo for maxent models
 library(dismo)
+#for B1 and B2
+library(ENMTools)
 
 setwd("C:/Users/julia/Documents/Agriculture and Agri-Food Canada/R/polyploidy_project")
 #READING DATA INTO R
 wc <- getData(name = "worldclim", var = "bio", res = 5)
 
 #parental species
-parent1 <- read.csv("Datasets/Aegilops_caudata.csv")
+parent1 <- read.csv("Datasets/Achillea_acuminata.csv")
 parent1 <- parent1[parent1$decimalLongitude != 0 & parent1$decimalLatitude != 0,]
 parent1 <- parent1[complete.cases(parent1$decimalLatitude),]
 parent1C <- parent1[, c("decimalLongitude", "decimalLatitude")]
 parent1C <- as.data.frame(subset(parent1C, !is.na(decimalLongitude)))
 
-parent2 <- read.csv("Datasets/Aegilops_tauschii.csv")
+parent1C <- SpatialPoints(parent1C, proj4string=CRS(proj4string(wrld_simpl)))
+parent1C <- parent1C[wrld_simpl] #remove points not on land
+parent1C <- data.frame(coordinates(parent1C))
+
+parent2 <- read.csv("Datasets/Achillea_asiatica.csv")
 parent2 <- parent2[parent2$decimalLongitude != 0 & parent2$decimalLatitude != 0, ] 
 parent2 <- parent2[complete.cases(parent2$decimalLatitude),]
 parent2C <- parent2[, c("decimalLongitude", "decimalLatitude")]
 parent2C <- as.data.frame(subset(parent2C, !is.na(decimalLongitude)))
 
+parent2C <- SpatialPoints(parent2C, proj4string=CRS(proj4string(wrld_simpl)))
+parent2C <- parent2C[wrld_simpl] #remove points not on land
+parent2C <- data.frame(coordinates(parent2C))
+
 #allopolyploid 
-hybrid <- read.csv("Datasets/Aegilops_cylindrica.csv")
+hybrid <- read.csv("Datasets/Achillea_wilsoniana.csv")
 hybrid <- hybrid[hybrid$decimalLongitude != 0 & hybrid$decimalLatitude != 0, ]  
 hybrid <- hybrid[complete.cases(hybrid$decimalLatitude),]
 hybridC <- hybrid[, c("decimalLongitude", "decimalLatitude")] #only x and y coordinates 
 hybridC <- as.data.frame(subset(hybridC, !is.na(decimalLongitude)))
+
+hybridC <- SpatialPoints(hybridC, proj4string=CRS(proj4string(wrld_simpl)))
+hybridC <- hybridC[wrld_simpl] #remove points not on land
+hybridC <- data.frame(coordinates(hybridC)) #extract coordinates and convert to dataframe
 
 #get name of species for saving maxent model
 parent1_name <- parent1$species[1]
@@ -48,7 +62,7 @@ sample.bias <- function(coords){
 
 hybridsel <- sample.bias(hybridC) 
 parent1sel <- sample.bias(parent1C)
-parent1sel <- sample.bias(parent2C)
+parent2sel <- sample.bias(parent2C)
 
 
 #MaxEnt Modeling 
@@ -65,11 +79,11 @@ load(paste("Models/", hybrid_name[1], "_", hybrid_name[2], "_19var", ".RData", s
 
 ##parent 1
 xm_parent1 <- maxent(wc, parent1sel) 
-pr_parent1 <- predict(wc, xm) 
+pr_parent1 <- predict(wc, xm_parent1) 
 plot(pr_parent1) #model of the species 
 plot(xm_parent1) #look at how each variable responds to the species distribution
 
-raster.breadth(pr)
+raster.breadth(pr_parent1)
 
 save(xm_parent1, pr_parent1, file = paste("Models/", parent1_name[1], "_", parent1_name[2], "_19var",
                                           ".RData", sep= ""))
@@ -87,3 +101,4 @@ raster.breadth(pr_parent2)
 save(xm_parent2, pr_parent2, file = paste("Models/", parent2_name[1], "_", parent2_name[2], "_19var",
                                            ".RData", sep= ""))
 load(paste("Models/", parent2_name[1], "_", parent2_name[2], "_19var",".RData", sep= ""))
+
