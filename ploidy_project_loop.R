@@ -15,6 +15,7 @@ library(maptools)
 library(dismo)
 library(rgeos)
 library(ENMTools)
+library(geosphere)
 
 #-------------------------------------------------------------------------------------------------------------------------------------
 # Session Tool Information: 
@@ -178,7 +179,11 @@ for (i in 1:nrow(comb)){
   
   minlat_hybrid <- min(hybridC$decimalLatitude)
   minlat_parent1 <- min(parent1C$decimalLatitude)
-
+  
+  #Determine the centroid
+  hybrid_centroid <- centroid(hybridC)
+  parent1_centroid <- centroid(parent1C)
+  
   ## Extract climate conditions where the species occurs 
   
   message("  extracting climate data")
@@ -322,6 +327,26 @@ for (i in 1:nrow(comb)){
     
     minlat_parent2 <- min(parent2C$decimalLatitude)
     
+    #determine centroid for parent 2 and position for species with two parents
+    parent2_centroid <- centroid(parent2C)
+    position <- "NA" #remove value from last loop
+    
+    if (hybrid_centroid[2]>parent1_centroid[2]) {
+      if (hybrid_centroid[2]>parent2_centroid[2]){
+        position <- "north" 
+        }
+    } 
+    
+    if (hybrid_centroid[2]<parent1_centroid[2]){
+      if (hybrid_centroid[2]<parent2_centroid[2]){
+        position <- "south"
+      }
+    }
+    
+    if (position != "south" & position != "north") {
+      position <- "intermediate"
+    } 
+    
     message("..extracting env")
     ## Extract environmental occurrence conditions
     parent2_env <- envextract(parent2C)
@@ -457,6 +482,13 @@ for (i in 1:nrow(comb)){
     comp3_overlapGeo <- NA
     comp3_parent2_onlyGeo <- NA
     comp3_parent1_onlyGeo <- NA
+    
+    #determine position for species with one parent
+    if (hybrid_centroid[2]>parent1_centroid[2]) {
+      position <- "north" 
+      } else {
+        position <- "south"
+        }
   }
   
   data.line <- data.frame(Species = hybrid_name, P1 = parent1_name, P2 = parent2_name, 
@@ -504,7 +536,8 @@ for (i in 1:nrow(comb)){
                           Parents_env_parent1only = comp3_parent1_only,
                           Parents_geo_overlap = comp3_overlapGeo,
                           Parents_geo_overlap_parent2_only = comp3_parent2_onlyGeo,
-                          Parents_geo_overlap_parent1_only = comp3_parent1_onlyGeo)
+                          Parents_geo_overlap_parent1_only = comp3_parent1_onlyGeo, 
+                          position = position)
   
   
   Summary.File <- rbind(Summary.File, data.line)
