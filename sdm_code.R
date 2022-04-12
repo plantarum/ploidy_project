@@ -11,7 +11,7 @@ setwd("C:/Users/julia/Documents/Agriculture and Agri-Food Canada/R/polyploidy_pr
 wc <- getData(name = "worldclim", var = "bio", res = 5)
 
 #parental species
-parent1 <- read.csv("Datasets/Achillea_acuminata.csv")
+parent1 <- read.csv("Datasets/Aegilops_comosa.csv")
 parent1 <- parent1[parent1$decimalLongitude != 0 & parent1$decimalLatitude != 0,]
 parent1 <- parent1[complete.cases(parent1$decimalLatitude),]
 parent1C <- parent1[, c("decimalLongitude", "decimalLatitude")]
@@ -21,7 +21,7 @@ parent1C <- SpatialPoints(parent1C, proj4string=CRS(proj4string(wrld_simpl)))
 parent1C <- parent1C[wrld_simpl] #remove points not on land
 parent1C <- data.frame(coordinates(parent1C))
 
-parent2 <- read.csv("Datasets/Achillea_asiatica.csv")
+parent2 <- read.csv("Datasets/Aegilops_umbellulata.csv")
 parent2 <- parent2[parent2$decimalLongitude != 0 & parent2$decimalLatitude != 0, ] 
 parent2 <- parent2[complete.cases(parent2$decimalLatitude),]
 parent2C <- parent2[, c("decimalLongitude", "decimalLatitude")]
@@ -32,7 +32,7 @@ parent2C <- parent2C[wrld_simpl] #remove points not on land
 parent2C <- data.frame(coordinates(parent2C))
 
 #allopolyploid 
-hybrid <- read.csv("Datasets/Achillea_wilsoniana.csv")
+hybrid <- read.csv("Datasets/Aegilops_kotschyi.csv")
 hybrid <- hybrid[hybrid$decimalLongitude != 0 & hybrid$decimalLatitude != 0, ]  
 hybrid <- hybrid[complete.cases(hybrid$decimalLatitude),]
 hybridC <- hybrid[, c("decimalLongitude", "decimalLatitude")] #only x and y coordinates 
