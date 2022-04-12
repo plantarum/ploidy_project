@@ -1,8 +1,10 @@
 ## Chi-square analysis ##
 
 setwd("C:/Users/julia/Documents/Agriculture and Agri-Food Canada/R/polyploidy_project")
-#data <- read.csv("Ploidy_project_analysis_Mon_Apr_04_2022.csv")
-data <- read.csv("Results_summary_onlydiploids_April2022.csv")
+data <- read.csv("Ploidy_project_analysis_Mon_Apr_04_2022.csv")
+#data <- read.csv("Results_summary_onlydiploids_April2022.csv")
+model_data <- read.csv("maxentmodels_B1+B2_April2022.csv")
+#model_data <- read.csv("maxentmodels_B1+B2_onlydiploidPs_April2022.csv")
 
 ## Geographic range area:
 ranges <- data[, c("Range_km2", "P1_range_km2", "P2_range_km2")]
@@ -182,3 +184,33 @@ table(geo_overlapRanks2P[, "Parents_geo_overlap"])
 ## Tests:
 chisq.test(table(geo_overlapRanks2P[, "Parents_geo_overlap"]))
 
+## Parents vs Parent-hybrid overlap for B1+B2:
+B1 <- model_data[, c("B1", "B1_P1", "B1_P2")]
+
+B1Ranks <- apply(B1, 1, function(x) rank(x, na.last = "keep"))
+B1Ranks <- t(B1Ranks)
+B1Ranks2P <- subset(B1Ranks, !is.na(B1Ranks[, "B1_P2"]))
+B1Ranks1P <- subset(B1Ranks, is.na(B1Ranks[, "B1_P2"]))
+
+## data:
+table(B1Ranks1P[, "B1"])
+table(B1Ranks2P[, "B1"])
+
+## Tests:
+chisq.test(table(B1Ranks1P[, "B1"]))
+chisq.test(table(B1Ranks2P[, "B1"]))
+
+B2 <- model_data[, c("B2", "B2_P1", "B2_P2")]
+
+B2Ranks <- apply(B2, 1, function(x) rank(x, na.last = "keep"))
+B2Ranks <- t(B2Ranks)
+B2Ranks2P <- subset(B2Ranks, !is.na(B2Ranks[, "B2_P2"]))
+B2Ranks1P <- subset(B2Ranks, is.na(B2Ranks[, "B2_P2"]))
+
+## data:
+table(B2Ranks1P[, "B2"])
+table(B2Ranks2P[, "B2"])
+
+## Tests:
+chisq.test(table(B2Ranks1P[, "B2"]))
+chisq.test(table(B2Ranks2P[, "B2"]))
