@@ -182,7 +182,11 @@ for (i in 1:nrow(comb)){
   
   #Determine the centroid
   hybrid_centroid <- centroid(hybridC)
+  centroid_latitude <- hybrid_centroid[2]
+  centroid_longitude <- hybrid_centroid[1]
   parent1_centroid <- centroid(parent1C)
+  P1_centroid_latitude <- parent1_centroid[2]
+  P1_centroid_longitude <- parent1_centroid[1]
   
   ## Extract climate conditions where the species occurs 
   
@@ -329,23 +333,26 @@ for (i in 1:nrow(comb)){
     
     #determine centroid for parent 2 and position for species with two parents
     parent2_centroid <- centroid(parent2C)
+    P2_centroid_latitude <- parent2_centroid[2]
+    P2_centroid_longitude <- parent2_centroid[1]
     position <- "NA" #remove value from last loop
     
-    if (hybrid_centroid[2]>parent1_centroid[2]) {
-      if (hybrid_centroid[2]>parent2_centroid[2]){
-        position <- "north" 
-        }
+    if (abs(hybrid_centroid[2])>abs(parent1_centroid[2])) {
+      if (abs(hybrid_centroid[2])>abs(parent2_centroid[2])){
+        position <- "more polar" 
+      }
     } 
     
-    if (hybrid_centroid[2]<parent1_centroid[2]){
-      if (hybrid_centroid[2]<parent2_centroid[2]){
-        position <- "south"
+    if (abs(hybrid_centroid[2])<abs(parent1_centroid[2])){
+      if (abs(hybrid_centroid[2])<abs(parent2_centroid[2])){
+        position <- "less polar"
       }
     }
     
-    if (position != "south" & position != "north") {
+    if (position != "more polar" & position != "less polar") {
       position <- "intermediate"
     } 
+  }
     
     message("..extracting env")
     ## Extract environmental occurrence conditions
@@ -452,6 +459,8 @@ for (i in 1:nrow(comb)){
     parent2_name <- NA
     minlat_parent2 <- NA
     maxlat_parent2 <- NA
+    P2_centroid_longitude <- NA
+    P2_centroid_latitude <- NA
     area_parent2 <- NA
     env_range_area_P2 <- NA
     comp2_overlap <- NA
@@ -483,12 +492,19 @@ for (i in 1:nrow(comb)){
     comp3_parent2_onlyGeo <- NA
     comp3_parent1_onlyGeo <- NA
     
-    #determine position for species with one parent
-    if (hybrid_centroid[2]>parent1_centroid[2]) {
-      position <- "north" 
+    if (is.na(parent2s[i])){
+      parent2_name <- NA
+      P2_centroid_longitude <- NA
+      P2_centroid_latitude <- NA
+      position <- "NA"
+      
+      #determine position for species with one parent
+      if (abs(hybrid_centroid[2])>abs(parent1_centroid[2])) {
+        position <- "more polar" 
       } else {
-        position <- "south"
-        }
+        position <- "less polar"
+      }
+      
   }
   
   data.line <- data.frame(Species = hybrid_name, P1 = parent1_name, P2 = parent2_name, 
@@ -537,7 +553,9 @@ for (i in 1:nrow(comb)){
                           Parents_geo_overlap = comp3_overlapGeo,
                           Parents_geo_overlap_parent2_only = comp3_parent2_onlyGeo,
                           Parents_geo_overlap_parent1_only = comp3_parent1_onlyGeo, 
-                          position = position)
+                          centroid_longitude, centroid_latitude, P1_centroid_longitude, 
+                          P1_centroid_latitude, P2_centroid_longitude, P2_centroid_latitude,
+                          position)
   
   
   Summary.File <- rbind(Summary.File, data.line)
