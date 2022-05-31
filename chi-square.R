@@ -216,17 +216,17 @@ chisq.test(table(B2Ranks1P[, "B2"]))
 chisq.test(table(B2Ranks2P[, "B2"]))
 
 ## Centroid position:
-centroid <- data[, c("centroid_latitude", "P1_centroid_latitude", "P2_centroid_latitude")]
+centroid <- data[, c("ABS.centroid_latitude.", "ABS.P1_centroid_latitude.", "ABS.P2_centroid_latitude.")]
 
 centroidRanks <- apply(centroid, 1, function(x) rank(x, na.last = "keep", ties.method = "first"))
 centroidRanks <- t(centroidRanks)
-centroidRanks2P <- subset(centroidRanks, !is.na(centroidRanks[, "P2_centroid_latitude"]))
-centroidRanks1P <- subset(centroidRanks, is.na(centroidRanks[, "P2_centroid_latitude"]))
+centroidRanks2P <- subset(centroidRanks, !is.na(centroidRanks[, "ABS.P2_centroid_latitude."]))
+centroidRanks1P <- subset(centroidRanks, is.na(centroidRanks[, "ABS.P2_centroid_latitude."]))
 
 ## data:
-table(centroidRanks1P[, "centroid_latitude"])
-table(centroidRanks2P[, "centroid_latitude"])
+table(centroidRanks1P[, "ABS.centroid_latitude."])
+table(centroidRanks2P[, "ABS.centroid_latitude."])
 
 ## Tests:
-chisq.test(table(centroidRanks1P[, "centroid_latitude"]))
-chisq.test(table(centroidRanks2P[, "centroid_latitude"]))
+chisq.test(table(centroidRanks1P[, "ABS.centroid_latitude."]))
+chisq.test(table(centroidRanks2P[, "ABS.centroid_latitude."]))
