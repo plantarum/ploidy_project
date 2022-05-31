@@ -1,10 +1,10 @@
 ## Chi-square analysis ##
 
 setwd("C:/Users/julia/Documents/Agriculture and Agri-Food Canada/R/polyploidy_project")
-data <- read.csv("Ploidy_project_analysis_Mon_Apr_04_2022.csv")
-#data <- read.csv("Results_summary_onlydiploids_April2022.csv")
-model_data <- read.csv("maxentmodels_B1+B2_April2022.csv")
-#model_data <- read.csv("maxentmodels_B1+B2_onlydiploidPs_April2022.csv")
+#data <- read.csv("Ploidy_project_analysis_Mon_Apr_04_2022.csv")
+data <- read.csv("Results_summary_onlydiploids_April2022.csv")
+#model_data <- read.csv("maxentmodels_B1+B2_April2022.csv")
+model_data <- read.csv("maxentmodels_B1+B2_onlydiploidPs_April2022.csv")
 
 ## Geographic range area:
 ranges <- data[, c("Range_km2", "P1_range_km2", "P2_range_km2")]
@@ -49,7 +49,7 @@ chisq.test(table(envrangeRanks2P[, "Env_range_area"]))
 ## Max. Latitude:
 max_lat <- data[, c("Max_Lat_hybrid", "Max_Lat_P1", "Max_Lat_P2")]
 
-maxlatRanks <- apply(max_lat, 1, function(x) rank(x, na.last = "keep"))
+maxlatRanks <- apply(max_lat, 1, function(x) rank(x, na.last = "keep", ties.method = "first"))
 maxlatRanks <- t(maxlatRanks)
 maxlatRanks2P <- subset(maxlatRanks, !is.na(maxlatRanks[, "Max_Lat_P2"]))
 maxlatRanks1P <- subset(maxlatRanks, is.na(maxlatRanks[, "Max_Lat_P2"]))
@@ -65,7 +65,7 @@ chisq.test(table(maxlatRanks2P[, "Max_Lat_hybrid"]))
 ## Max. Temperature:
 max_temp <- data[, c("Temp_max", "P1_Temp_max", "P2_Temp_max")]
 
-maxtempRanks <- apply(max_temp, 1, function(x) rank(x, na.last = "keep"))
+maxtempRanks <- apply(max_temp, 1, function(x) rank(x, na.last = "keep", ties.method = "first"))
 maxtempRanks <- t(maxtempRanks)
 maxtempRanks2P <- subset(maxtempRanks, !is.na(maxtempRanks[, "P2_Temp_max"]))
 maxtempRanks1P <- subset(maxtempRanks, is.na(maxtempRanks[, "P2_Temp_max"]))
@@ -81,7 +81,7 @@ chisq.test(table(maxtempRanks2P[, "Temp_max"]))
 ## Min. Temperature:
 min_temp <- data[, c("Temp_min", "P1_temp_min", "P2_temp_min")]
 
-mintempRanks <- apply(min_temp, 1, function(x) rank(x, na.last = "keep"))
+mintempRanks <- apply(min_temp, 1, function(x) rank(x, na.last = "keep",ties.method = "last"))
 mintempRanks <- t(mintempRanks)
 mintempRanks2P <- subset(mintempRanks, !is.na(mintempRanks[, "P2_temp_min"]))
 mintempRanks1P <- subset(mintempRanks, is.na(mintempRanks[, "P2_temp_min"]))
@@ -113,7 +113,7 @@ chisq.test(table(tempbreadthRanks2P[, "Temp_breadth"]))
 ## Max. Precipitation:
 max_precip <- data[, c("Precip_max", "P1_precip_max", "P2_precip_max")]
 
-maxprecipRanks <- apply(max_precip, 1, function(x) rank(x, na.last = "keep"))
+maxprecipRanks <- apply(max_precip, 1, function(x) rank(x, na.last = "keep", ties.method = "first"))
 maxprecipRanks <- t(maxprecipRanks)
 maxprecipRanks2P <- subset(maxprecipRanks, !is.na(maxprecipRanks[, "P2_precip_max"]))
 maxprecipRanks1P <- subset(maxprecipRanks, is.na(maxprecipRanks[, "P2_precip_max"]))
@@ -129,7 +129,7 @@ chisq.test(table(maxprecipRanks2P[, "Precip_max"]))
 ## Min. Precipitation:
 min_precip <- data[, c("Precip_min", "P1_precip_min", "P2_precip_min")]
 
-minprecipRanks <- apply(min_precip, 1, function(x) rank(x, na.last = "keep"))
+minprecipRanks <- apply(min_precip, 1, function(x) rank(x, na.last = "keep", ties.method = "last"))
 minprecipRanks <- t(minprecipRanks)
 minprecipRanks2P <- subset(minprecipRanks, !is.na(minprecipRanks[, "P2_precip_min"]))
 minprecipRanks1P <- subset(minprecipRanks, is.na(minprecipRanks[, "P2_precip_min"]))
@@ -145,7 +145,7 @@ chisq.test(table(minprecipRanks2P[, "Precip_min"]))
 ## Precipitation breadth:
 precipbreadth <- data[, c("Precip_breadth", "P1_Precip_breadth", "P2_precip_breadth")]
 
-precipbreadthRanks <- apply(precipbreadth, 1, function(x) rank(x, na.last = "keep"))
+precipbreadthRanks <- apply(precipbreadth, 1, function(x) rank(x, na.last = "keep", ties.method = "first"))
 precipbreadthRanks <- t(precipbreadthRanks)
 precipbreadthRanks2P <- subset(precipbreadthRanks, !is.na(precipbreadthRanks[, "P2_precip_breadth"]))
 precipbreadthRanks1P <- subset(precipbreadthRanks, is.na(precipbreadthRanks[, "P2_precip_breadth"]))
@@ -161,7 +161,7 @@ chisq.test(table(precipbreadthRanks2P[, "Precip_breadth"]))
 ## Parents vs Parent-hybrid overlap for environmental range:
 overlap <- data[, c("P1_hybrid_overlap", "P2_hybrid_overlap", "Parents_env_overlap")]
 
-overlapRanks <- apply(overlap, 1, function(x) rank(x, na.last = "keep"))
+overlapRanks <- apply(overlap, 1, function(x) rank(x, na.last = "keep", ties.method = "first"))
 overlapRanks <- t(overlapRanks)
 overlapRanks2P <- subset(overlapRanks, !is.na(overlapRanks[, "P2_hybrid_overlap"]))
 
@@ -174,7 +174,7 @@ chisq.test(table(overlapRanks2P[, "Parents_env_overlap"]))
 ## Parents vs Parent-hybrid overlap for geographical range:
 geo_overlap <- data[, c("P1_h_geo_overlap", "P2_h_geo_overlap", "Parents_geo_overlap")]
 
-geo_overlapRanks <- apply(geo_overlap, 1, function(x) rank(x, na.last = "keep"))
+geo_overlapRanks <- apply(geo_overlap, 1, function(x) rank(x, na.last = "keep", ties.method = "first"))
 geo_overlapRanks <- t(geo_overlapRanks)
 geo_overlapRanks2P <- subset(geo_overlapRanks, !is.na(geo_overlapRanks[, "P2_h_geo_overlap"]))
 
@@ -214,3 +214,19 @@ table(B2Ranks2P[, "B2"])
 ## Tests:
 chisq.test(table(B2Ranks1P[, "B2"]))
 chisq.test(table(B2Ranks2P[, "B2"]))
+
+## Centroid position:
+centroid <- data[, c("centroid_latitude", "P1_centroid_latitude", "P2_centroid_latitude")]
+
+centroidRanks <- apply(centroid, 1, function(x) rank(x, na.last = "keep", ties.method = "first"))
+centroidRanks <- t(centroidRanks)
+centroidRanks2P <- subset(centroidRanks, !is.na(centroidRanks[, "P2_centroid_latitude"]))
+centroidRanks1P <- subset(centroidRanks, is.na(centroidRanks[, "P2_centroid_latitude"]))
+
+## data:
+table(centroidRanks1P[, "centroid_latitude"])
+table(centroidRanks2P[, "centroid_latitude"])
+
+## Tests:
+chisq.test(table(centroidRanks1P[, "centroid_latitude"]))
+chisq.test(table(centroidRanks2P[, "centroid_latitude"]))
